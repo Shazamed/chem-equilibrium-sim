@@ -6,7 +6,7 @@ from timeit import default_timer as timer
 
 # constants
 TIME_STEP = 1e-6
-MAX_TIME = 150
+MAX_TIME = 90
 
 def int_divide_round(time, precision):
     product = float(10**precision)
@@ -86,15 +86,11 @@ class System:
 
         
     def save(self):
-        return {"time": self.time_elapsed, 
-                "A": self.conc[0], 
-                "B": self.conc[1], 
-                "P": self.conc[2], 
-                "Q": self.conc[3], 
-                "X": self.conc[4],
-                "Y": self.conc[5],
-                "Z": self.conc[6]
-                }
+        state_dict = {}
+        for species_idx, species in enumerate(self.species_list):
+            state_dict[species] = self.conc[species_idx]
+        state_dict["time"] = self.time_elapsed
+        return state_dict
     
 
 def load_initial_state():
@@ -104,14 +100,14 @@ def load_initial_state():
         for line in concentration_lines:
             state_dict[line.split(" ")[0]] = float(eval(line.split(" ")[1]))
     state_dict["time"] = 0
-    state_list = [state_dict]
-    return state_list
+    return state_dict
 
+# arrays for plotting
 time_list = []
 x_list = []
 y_list = []
 z_list = []
-
+state_list = []
 
 try:
     state_list = pickle.load(open("oregonator-states.pickle", "rb"))
@@ -125,11 +121,9 @@ try:
     print("Data loaded")
 except (OSError) as e:
     print("file does not exist")
-    state_list = load_initial_state()
-    state = System(state_list[0])
+    state = System(load_initial_state())
 
 
-# memory dies so probably dont save every state
 while state.time_elapsed < MAX_TIME:
     state.step()
     if state.time_elapsed == int_divide_round(state.time_elapsed,2):
@@ -139,10 +133,9 @@ while state.time_elapsed < MAX_TIME:
         x_list.append(new_state["X"])
         y_list.append(new_state["Y"])
         z_list.append(new_state["Z"])
-        print(f"time elapsed={state.time_elapsed}")
+        print(f"time elapsed={state.time_elapsed}s")
 
 print("Iterations done")
-
 
 with open("oregonator-states.pickle", 'wb') as f:
     pickle.dump(state_list, f)
@@ -154,6 +147,7 @@ ax.set_title("Concentrations of relevant species in the Oregonator over time")
 ax.plot(time_list, x_list,label="X")
 ax.plot(time_list, y_list,label="Y")
 ax.plot(time_list, z_list,label="Z")
+ax.set_xlim(0,MAX_TIME)
 ax.set_ylabel("Concentration / M")
 ax.set_xlabel("t / s")
 ax.legend()
