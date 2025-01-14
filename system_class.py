@@ -17,7 +17,7 @@ class System:
         self.del_conc = np.zeros(len(self.species_list))
 
         self.initialize_concentrations(state_dict)
-        self.generate_exponential_matrix()
+        self.generate_scaling_matrix()
         self.generate_rate_constants_matrix()
 
 
@@ -42,7 +42,10 @@ class System:
                     self.species_list.append(species)
         self.species_list = list(dict.fromkeys(sorted(self.species_list))) # get unique species
 
-    def generate_exponential_matrix(self):
+    def generate_scaling_matrix(self):
+        '''saves the order of the reaction with respect to the individual reagent in self.powers
+        and saves the coefficient for the rate of change of a reagent for that reaction in self.coeff        
+        '''
         self.powers = np.zeros([len(self.species_list),len(self.reactions_list)])
         self.coeff = np.zeros([len(self.species_list),len(self.reactions_list)])
         for reaction_idx, reaction in enumerate(self.reactions_list):
