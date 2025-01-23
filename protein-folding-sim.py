@@ -5,13 +5,15 @@ from system_class import System
 
 # constants
 TIME_STEP = 1e-6
-MAX_TIME = 10
+MAX_TIME = 15
 RELATIVE_TOLERANCE = 1e-3 # for comparing if equilibrium has been reached
 REACTION_PATH = "protein_inputs/protein-reactions.txt"
 
 # specify range of urea concentrations 
 urea_conc_range = np.concatenate([np.arange(0,8.5,0.5),np.arange(3,6.5,0.2)])
+
 urea_conc_range = np.unique(urea_conc_range.round(decimals=6)) # remove floating point errors and then remove repeated values
+
 def int_divide_round(time, precision):
     '''Faster rounding to the decimal place indicated by precision'''
     product = float(10**precision)
@@ -80,7 +82,6 @@ i_list = []
 n_list = []
 eq_list = []
 
-
 try: # try to load the file if file exist    
     eq_list = pickle.load(open("protein-eq.pickle", "rb"))
     last_state = eq_list[-1]
@@ -94,12 +95,11 @@ try: # try to load the file if file exist
 except (OSError) as e:
     print("file does not exist")
 
-
 saved_state = None
 
 for urea in urea_conc_range: #  loop over all concentrations in urea range
     if urea in urea_list: # if concentration already exist in saved list, skip calculating
-        break
+        continue
     print(f"Urea concentration: {urea}M")
     state = Cell(load_initial_state(urea, saved_state), TIME_STEP, REACTION_PATH) # generate state from initial concentrations of the last concentration state or from input for the first run
     while state.time_elapsed < MAX_TIME: # set max time if equilibration takes too long 
@@ -125,13 +125,15 @@ print("Iterations done")
 with open("protein-eq.pickle", 'wb') as f:
     pickle.dump(eq_list, f)
 
+total_conc = np.array(d_list) + np.array(i_list) + np.array(n_list)
+
 # plotting
 fig = plt.figure()
 ax = fig.add_subplot()
 ax.set_title("Equilibrium fraction of protein states against urea concentration")
-ax.scatter(urea_list, d_list,label="D", marker='x')
-ax.scatter(urea_list, i_list,label="I", marker='+')
-ax.scatter(urea_list, n_list,label="N", marker='.')
+ax.scatter(urea_list, np.array(d_list)/total_conc,label="D", marker='x')
+ax.scatter(urea_list, np.array(i_list)/total_conc,label="I", marker='+')
+ax.scatter(urea_list, np.array(n_list)/total_conc,label="N", marker='.')
 ax.set_ylabel("Fraction of Species")
 ax.set_xlabel("[Urea]/M")
 ax.legend()

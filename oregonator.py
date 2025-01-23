@@ -2,12 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from system_class import System
-from timeit import default_timer as timer
-
 
 # constants
 TIME_STEP = 1e-6
-MAX_TIME = 120
+MAX_TIME = 130 # the pickle file has saved 120s of data, increase MAX_TIME above 120 to generate more data
 REACTION_PATH = "oregonator_inputs/oregonator-reactions.txt"
 
 def int_divide_round(time, precision):
