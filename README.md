@@ -1,5 +1,5 @@
 # chem-equilibrium-sim
-Calculate equilibrium concentration and changes in concentration over time of a 1D chemical system.
+Calculate equilibrium concentration and changes in concentration over time in a chemical system.
 ## Description
 The script is able to read concentration and reaction data from a set of .txt files and calculates the rate equation for each of the reactions in the system. 
 
